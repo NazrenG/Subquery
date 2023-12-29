@@ -1,0 +1,93 @@
+---------------------------------
+--   Create TABLE&DATABASE     --
+---------------------------------
+
+create database Academy
+use Academy
+create table Curators
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+CuratorsName nvarchar(max) NOT NULL DEFAULT 'NONE',
+Surname nvarchar(max) NOT NULL DEFAULT 'NONE'
+)
+
+create table Faculties
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+FacultyName nvarchar(100) NOT NULL DEFAULT 'NONE' UNIQUE
+)
+
+create table Subjects
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+SubjectName nvarchar(100) NOT NULL DEFAULT 'NONE' UNIQUE
+)
+
+create table Teachers
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+[Name] nvarchar(MAX) NOT NULL DEFAULT 'NONE' ,
+Salary money NOT NULL CHECK(Salary>0),
+Surname nvarchar(MAX) NOT NULL DEFAULT 'NONE',
+IsProfessor bit NOT NULL DEFAULT 0
+)
+
+create table Departments
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+Financing money NOT NULL CHECK(Financing>=0) DEFAULT 0,
+DepartmentName nvarchar(100) NOT NULL DEFAULT 'NONE' UNIQUE,
+FacultyId int NOT NULL FOREIGN KEY(FacultyId) REFERENCES Faculties(Id),
+Building int NOT NULL CHECK(Building between 1 and 5)
+
+)
+
+create table Groups
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+GroupName nvarchar(10) NOT NULL DEFAULT 'NONE' UNIQUE,
+[Year] int NOT NULL CHECK([Year] between 1 and 5),
+DepartmentId int NOT NULL FOREIGN KEY(DepartmentId) REFERENCES Departments(Id)
+)
+
+create table GroupsCurators
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+CuratorId int NOT NULL FOREIGN KEY(CuratorId) REFERENCES Curators(Id),
+GroupId  int NOT NULL FOREIGN KEY(GroupId) REFERENCES Groups(Id)
+)
+
+
+
+create table Lectures 
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+DateOfLecture date NOT NULL CHECK(DateOfLecture<=GETDATE()),
+SubjectId int NOT NULL FOREIGN KEY(SubjectId) REFERENCES Subjects(Id),
+TeacherId int NOT NULL FOREIGN KEY(TeacherId) REFERENCES Teachers(Id),
+)
+
+create table GroupsLectures
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+GroupId  int NOT NULL FOREIGN KEY(GroupId) REFERENCES Groups(Id),
+LectureId int NOT NULL FOREIGN KEY(LectureId) REFERENCES Lectures(Id),
+
+)
+
+create table Students
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+[Name] nvarchar(max) NOT NULL DEFAULT 'NONE',
+Rating int NOT NULL CHECK(Rating between 0 and 5),
+Surname nvarchar(max) NOT NULL DEFAULT 'NONE',
+
+)
+
+create table GroupsStudents
+(
+Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+GroupId  int NOT NULL FOREIGN KEY(GroupId) REFERENCES Groups(Id),
+StudentId int NOT NULL FOREIGN KEY(StudentId) REFERENCES Students(Id),
+
+)

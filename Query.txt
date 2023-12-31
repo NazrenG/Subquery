@@ -1,0 +1,103 @@
+
+--------------------------------------
+--       Tasks                      --
+--------------------------------------
+
+--1
+select Building from Departments
+group by Building  
+having Building in 
+	(select Building from Departments 
+	group by Building
+	having sum(Financing)>10000)
+
+--3
+/*Butun telebelerin orta reytinqi,'D221' qrupunda olan telebelerin orta reytinqinden boyuk olan qruplarin adi*/
+
+select GroupName from Groups
+where Groups.Id in (
+	select GroupId from GroupsStudents,Students,Groups
+	where GroupsStudents.StudentId=Students.Id and
+	GroupsStudents.GroupId=Groups.Id and
+	Groups.GroupName='D221'  
+	group by GroupId
+	having avg(Rating)<(	
+		select avg(Rating) from Students
+		)
+	)
+
+--4
+select * from Teachers
+where IsProfessor=1 and Salary>(select AVG(Salary) from Teachers where IsProfessor=1)
+
+--5
+select GroupName from Groups
+where Groups.Id in (select GroupId from GroupsCurators group by GroupId having count(GroupId)>1)
+
+--6
+/*Butun telebelerin orta reytinqi,5 illik qruplarin min reytinqinden asagi olan qruplarin adlari*/
+
+select GroupName from Groups
+where Id in (
+	select GroupId from GroupsStudents,Students,Groups
+	where GroupsStudents.StudentId=Students.Id and
+	GroupsStudents.GroupId=Groups.Id and
+	Groups.Year=5
+	group by GroupId
+	having min(Rating)>(	
+		select avg(Rating) from Students
+		)
+	)
+
+--7
+/*Department table-daki total finans-i 'Computer Science' fakultesindeki total finans-dan cox olan fakultelerin adlari*/
+
+select FacultyName from Faculties
+where id in (
+	select FacultyId from Departments
+	group by FacultyId
+	having sum(Financing)> (
+		select sum(Financing) from Departments
+		where FacultyId=(
+			select Id from Faculties
+			where FacultyName='Computer Science'
+			) 
+		)
+	)
+
+--8	
+/*Uzun muddet ders deyen muellimlerin tam adini ve tedris etdiyi fennin adini ardicilliqla cixar*/
+
+select 
+    (select [Name] + ' ' + Surname from Teachers 
+     where Teachers.Id = Lectures.TeacherId) as FullName,
+    (select SubjectName from Subjects 
+     where Subjects.Id = Lectures.SubjectId) as SubjectName
+from Lectures 
+order by DateOfLecture asc
+
+
+--9
+/* Mühazirələrin vaxti ən qisa olan fənnin adı.*/
+
+select top 1 (
+	select SubjectName from Subjects 
+	where Id=Lectures.SubjectId) as SubjectName
+from Lectures
+order by DateOfLecture desc
+
+--10
+/*'Business Development' tədris olunan tələbələrin və fənlərin sayı*/
+select 
+    (select count(*) from Groups,GroupsStudents,Departments 
+     where Groups.Id=GroupsStudents.GroupId and
+	 Departments.Id=Groups.DepartmentId and
+	 Departments.DepartmentName='Business Development') as StudentsCount,
+
+    (select count(distinct(SubjectId)) from Subjects,GroupsLectures,Departments,Lectures,Groups
+     where Subjects.Id = Lectures.SubjectId and 
+	 GroupsLectures.GroupId=Groups.Id and
+	 Departments.Id=Groups.DepartmentId and
+	 Lectures.Id=GroupsLectures.LectureId and
+	 Departments.DepartmentName='Business Development') as SubjectCount
+
